@@ -1,1 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Fitness Coach</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* Dark Gray */
+            color: #d1d5db; /* Light Gray */
+        }
+        .form-input, .custom-exercise-input {
+            background-color: #1f2937;
+            border-color: #4b5563;
+            color: #d1d5db;
+        }
+        .form-input:focus, .custom-exercise-input:focus {
+            ring-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+        .workout-card {
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .workout-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+        }
+        video {
+            max-height: 500px;
+            width: 100%;
+            object-fit: cover;
+            border-radius: 0.5rem;
+        }
+        .auth-toggle-link {
+            cursor: pointer;
+            color: #3b82f6;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Auth View -->
+    <div id="auth-view" class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-md space-y-6">
+            <div class="text-center">
+                 <h1 class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-emerald-500">
+                    AI Fitness Coach
+                </h1>
+                <p id="auth-header-text" class="text-gray-400 mt-2">Sign in to your account</p>
+            </div>
+            <div class="bg-gray-800 p-8 rounded-2xl shadow-lg border border-gray-700">
+                <!-- Login Form -->
+                <form id="login-form" class="space-y-4">
+                    <button type="button" id="google-signin-btn" class="w-full bg-white text-gray-700 font-semibold py-3 px-4 rounded-lg border border-gray-300 flex items-center justify-center gap-2 hover:bg-gray-100 transition duration-300">
+                        <svg class="w-5 h-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"></path><path fill="#FF3D00" d="M6.306 14.691l6.057 4.844C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C16.318 4 9.656 8.337 6.306 14.691z"></path><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.223 0-9.641-3.337-11.303-7.917l-6.057 4.844C9.656 39.663 16.318 44 24 44z"></path><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C42.012 36.49 44 30.651 44 24c0-1.341-.138-2.65-.389-3.917z"></path></svg>
+                        Sign in with Google
+                    </button>
+                    <div class="relative flex py-2 items-center">
+                        <div class="flex-grow border-t border-gray-600"></div>
+                        <span class="flex-shrink mx-4 text-gray-400">OR</span>
+                        <div class="flex-grow border-t border-gray-600"></div>
+                    </div>
+                    <div>
+                        <label for="login-email" class="block mb-2 text-sm font-medium text-gray-300">Email</label>
+                        <input type="email" id="login-email" class="form-input w-full p-3 rounded-lg border" placeholder="you@example.com" required>
+                    </div>
+                    <div>
+                        <label for="login-password" class="block mb-2 text-sm font-medium text-gray-300">Password</label>
+                        <input type="password" id="login-password" class="form-input w-full p-3 rounded-lg border" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300">Login</button>
+                    <p class="text-center text-sm text-gray-400">
+                        Don't have an account? <span id="show-signup" class="auth-toggle-link">Sign Up</span>
+                    </p>
+                </form>
+
+                <!-- Signup Form -->
+                <form id="signup-form" class="hidden space-y-4">
+                     <button type="button" id="google-signup-btn" class="w-full bg-white text-gray-700 font-semibold py-3 px-4 rounded-lg border border-gray-300 flex items-center justify-center gap-2 hover:bg-gray-100 transition duration-300">
+                        <svg class="w-5 h-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"></path><path fill="#FF3D00" d="M6.306 14.691l6.057 4.844C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C16.318 4 9.656 8.337 6.306 14.691z"></path><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.223 0-9.641-3.337-11.303-7.917l-6.057 4.844C9.656 39.663 16.318 44 24 44z"></path><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C42.012 36.49 44 30.651 44 24c0-1.341-.138-2.65-.389-3.917z"></path></svg>
+                        Sign up with Google
+                    </button>
+                    <div class="relative flex py-2 items-center">
+                        <div class="flex-grow border-t border-gray-600"></div>
+                        <span class="flex-shrink mx-4 text-gray-400">OR</span>
+                        <div class="flex-grow border-t border-gray-600"></div>
+                    </div>
+                    <div>
+                        <label for="signup-username" class="block mb-2 text-sm font-medium text-gray-300">Your Name</label>
+                        <input type="text" id="signup-username" class="form-input w-full p-3 rounded-lg border" placeholder="Jane Doe" required>
+                    </div>
+                    <div>
+                        <label for="signup-email" class="block mb-2 text-sm font-medium text-gray-300">Email</label>
+                        <input type="email" id="signup-email" class="form-input w-full p-3 rounded-lg border" placeholder="you@example.com" required>
+                    </div>
+                    <div>
+                        <label for="signup-password" class="block mb-2 text-sm font-medium text-gray-300">Password</label>
+                        <input type="password" id="signup-password" class="form-input w-full p-3 rounded-lg border" placeholder="6+ characters" required>
+                    </div>
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300">Create Account</button>
+                     <p class="text-center text-sm text-gray-400">
+                        Already have an account? <span id="show-login" class="auth-toggle-link">Login</span>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App View -->
+    <div id="main-app-view" class="hidden container mx-auto p-4 md:p-8">
+        
+        <header class="flex flex-wrap justify-between items-center mb-10">
+            <div>
+                 <h1 id="welcome-header" class="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-emerald-500">
+                    <!-- Welcome message is injected here -->
+                </h1>
+                <div class="mt-2 text-sm text-gray-400">
+                    <p>Your User ID (Share with friends to connect):</p>
+                    <p id="user-id-display" class="font-mono bg-gray-900 p-2 rounded-md mt-1 cursor-pointer" title="Click to copy"></p>
+                </div>
+            </div>
+            <button id="logout-btn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 mt-4 md:mt-0">Logout</button>
+        </header>
+        
+        <!-- Community Feed Section -->
+        <div class="mb-12">
+            <h2 class="text-3xl font-bold text-center mb-6">Community Feed</h2>
+            
+            <div class="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700 mb-8">
+                <h3 class="text-xl font-bold text-emerald-400 mb-4">Connect with Friends</h3>
+                <form id="add-friend-form" class="flex flex-col sm:flex-row gap-4">
+                    <input type="text" id="friend-id-input" placeholder="Enter Friend's User ID" class="form-input flex-grow p-3 rounded-lg border">
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300">Add Friend</button>
+                </form>
+                <div class="mt-4">
+                    <h4 class="text-lg font-semibold text-gray-300">Your Friends:</h4>
+                    <ul id="friends-list" class="text-gray-400 mt-2 list-disc list-inside"></ul>
+                </div>
+            </div>
+
+            <div class="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700 mb-8">
+                 <h3 class="text-xl font-bold text-blue-400 mb-4">Share Your Workout</h3>
+                 <form id="post-form">
+                     <textarea id="post-caption" class="form-input w-full p-3 rounded-lg border mb-4" placeholder="How was your workout?" required></textarea>
+                     <input type="file" id="post-media" class="text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700" accept="image/*,video/*" required>
+                     <button type="submit" id="submit-post-btn" class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300">Post Update</button>
+                     <p id="upload-status" class="text-center mt-2 text-emerald-400"></p>
+                 </form>
+            </div>
+
+            <div id="feed-container" class="space-y-8"></div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            onAuthStateChanged, 
+            signOut,
+            GoogleAuthProvider,
+            signInWithPopup
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, doc, setDoc, getDoc, collection, addDoc, query, where, onSnapshot, serverTimestamp, orderBy, getDocs
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { 
+            getStorage, ref, uploadBytesResumable, getDownloadURL 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+
+        // --- Your web app's Firebase configuration ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAPY8DFbYzZOynHxlTz_VSVXlu1cf74rfk",
+            authDomain: "myfitnesscoach-705f1.firebaseapp.com",
+            projectId: "myfitnesscoach-705f1",
+            storageBucket: "myfitnesscoach-705f1.appspot.com",
+            messagingSenderId: "286719746329",
+            appId: "1:286719746329:web:69eded8ae95a3d92162588",
+            measurementId: "G-RN70F5BXG3"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        // --- DOM Elements ---
+        const authView = document.getElementById('auth-view');
+        const mainAppView = document.getElementById('main-app-view');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const authHeaderText = document.getElementById('auth-header-text');
+        const googleSignInBtn = document.getElementById('google-signin-btn');
+        const googleSignUpBtn = document.getElementById('google-signup-btn');
+        
+        const welcomeHeader = document.getElementById('welcome-header');
+        const logoutBtn = document.getElementById('logout-btn');
+        const userIdDisplay = document.getElementById('user-id-display');
+        const addFriendForm = document.getElementById('add-friend-form');
+        const friendIdInput = document.getElementById('friend-id-input');
+        const friendsList = document.getElementById('friends-list');
+        const postForm = document.getElementById('post-form');
+        const postCaption = document.getElementById('post-caption');
+        const postMedia = document.getElementById('post-media');
+        const submitPostBtn = document.getElementById('submit-post-btn');
+        const uploadStatus = document.getElementById('upload-status');
+        const feedContainer = document.getElementById('feed-container');
+
+        // --- User State ---
+        let currentUserInfo = null;
+        let friendsUnsubscribe = null;
+        let feedUnsubscribe = null;
+        
+        // --- Auth UI Toggling ---
+        document.getElementById('show-signup').addEventListener('click', () => {
+            loginForm.classList.add('hidden');
+            signupForm.classList.remove('hidden');
+            authHeaderText.textContent = 'Create a new account';
+        });
+
+        document.getElementById('show-login').addEventListener('click', () => {
+            signupForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+            authHeaderText.textContent = 'Sign in to your account';
+        });
+
+        // --- App Initialization & Auth Handling ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userDocRef = doc(db, `artifacts/${appId}/public/data/users`, user.uid);
+                const userDoc = await getDoc(userDocRef);
+                if (userDoc.exists()) {
+                    currentUserInfo = {
+                        username: userDoc.data().username,
+                        userId: user.uid
+                    };
+                    initializeAppView();
+                } else {
+                    // This case handles a new Google Sign-In where the profile needs to be created
+                    await setDoc(userDocRef, {
+                        username: user.displayName || 'Google User',
+                        email: user.email,
+                        createdAt: serverTimestamp()
+                    });
+                    const newUserDoc = await getDoc(userDocRef);
+                     currentUserInfo = {
+                        username: newUserDoc.data().username,
+                        userId: user.uid
+                    };
+                    initializeAppView();
+                }
+            } else {
+                currentUserInfo = null;
+                authView.classList.remove('hidden');
+                mainAppView.classList.add('hidden');
+            }
+        });
+        
+        // --- Google Sign-In ---
+        const handleGoogleSignIn = async () => {
+            const provider = new GoogleAuthProvider();
+            try {
+                await signInWithPopup(auth, provider);
+                // onAuthStateChanged will handle the rest
+            } catch (error) {
+                alert(`Error with Google Sign-In: ${error.message}`);
+                console.error("Google Sign-In Error:", error);
+            }
+        };
+
+        googleSignInBtn.addEventListener('click', handleGoogleSignIn);
+        googleSignUpBtn.addEventListener('click', handleGoogleSignIn);
+
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('signup-username').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
+            const password = document.getElementById('signup-password').value.trim();
+
+            if (!username || !email || password.length < 6) {
+                alert("Please fill out all fields. Password must be at least 6 characters.");
+                return;
+            }
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                await setDoc(doc(db, `artifacts/${appId}/public/data/users`, user.uid), {
+                    username: username,
+                    email: email,
+                    createdAt: serverTimestamp()
+                });
+                // onAuthStateChanged will handle the rest
+            } catch (error) {
+                alert(`Error signing up: ${error.message}`);
+                console.error("Signup error:", error);
+            }
+        });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                // onAuthStateChanged will handle the rest
+            } catch (error) {
+                alert(`Error logging in: ${error.message}`);
+                console.error("Login error:", error);
+            }
+        });
+
+        function initializeAppView() {
+            authView.classList.add('hidden');
+            mainAppView.classList.remove('hidden');
+            
+            welcomeHeader.innerHTML = `Welcome, <span class="text-blue-400">${currentUserInfo.username}</span>!`;
+            userIdDisplay.textContent = currentUserInfo.userId;
+
+            if (friendsUnsubscribe) friendsUnsubscribe();
+            if (feedUnsubscribe) feedUnsubscribe();
+
+            listenForFriends();
+            listenForPosts();
+        }
+
+        logoutBtn.addEventListener('click', () => signOut(auth));
+        
+        userIdDisplay.addEventListener('click', () => {
+            if (!currentUserInfo) return;
+            navigator.clipboard.writeText(currentUserInfo.userId)
+                .then(() => {
+                    userIdDisplay.textContent = 'Copied!';
+                    setTimeout(() => userIdDisplay.textContent = currentUserInfo.userId, 1500);
+                });
+        });
+
+        // --- Social Features (Functions are the same as before) ---
+        addFriendForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const friendId = friendIdInput.value.trim();
+            if (!currentUserInfo || friendId === '' || friendId === currentUserInfo.userId) return;
+
+            try {
+                const friendDoc = await getDoc(doc(db, `artifacts/${appId}/public/data/users`, friendId));
+                if (!friendDoc.exists()) {
+                    alert("User not found!");
+                    return;
+                }
+                
+                const friendRef = doc(db, `artifacts/${appId}/public/data/users/${currentUserInfo.userId}/friends`, friendId);
+                await setDoc(friendRef, { username: friendDoc.data().username, addedAt: serverTimestamp() });
+                
+                const currentUserRef = doc(db, `artifacts/${appId}/public/data/users/${friendId}/friends`, currentUserInfo.userId);
+                await setDoc(currentUserRef, { username: currentUserInfo.username, addedAt: serverTimestamp() });
+
+                friendIdInput.value = '';
+                alert("Friend added successfully!");
+
+            } catch (error) {
+                console.error("Error adding friend:", error);
+                alert("Could not add friend.");
+            }
+        });
+        
+        function listenForFriends() {
+            if (!currentUserInfo) return;
+            const friendsCollection = collection(db, `artifacts/${appId}/public/data/users/${currentUserInfo.userId}/friends`);
+            friendsUnsubscribe = onSnapshot(friendsCollection, (snapshot) => {
+                friendsList.innerHTML = '';
+                 if(snapshot.empty){
+                    friendsList.innerHTML = '<li>No friends yet. Add one above!</li>';
+                    return;
+                }
+                snapshot.forEach(doc => {
+                    const li = document.createElement('li');
+                    li.textContent = doc.data().username;
+                    friendsList.appendChild(li);
+                });
+            });
+        }
+
+        postForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const caption = postCaption.value;
+            const file = postMedia.files[0];
+            if (!file || !currentUserInfo) return;
+
+            submitPostBtn.disabled = true;
+            uploadStatus.textContent = 'Uploading media...';
+
+            const storageRef = ref(storage, `posts/${currentUserInfo.userId}/${Date.now()}_${file.name}`);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+
+            uploadTask.on('state_changed', 
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    uploadStatus.textContent = `Uploading: ${Math.round(progress)}%`;
+                }, 
+                (error) => {
+                    console.error("Upload error:", error);
+                    uploadStatus.textContent = "Upload failed. Please try again.";
+                    submitPostBtn.disabled = false;
+                }, 
+                async () => {
+                    uploadStatus.textContent = "Getting file URL...";
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    
+                    await addDoc(collection(db, `artifacts/${appId}/public/data/posts`), {
+                        authorId: currentUserInfo.userId,
+                        authorName: currentUserInfo.username,
+                        caption: caption,
+                        mediaUrl: downloadURL,
+                        mediaType: file.type,
+                        createdAt: serverTimestamp(),
+                    });
+                    
+                    uploadStatus.textContent = "Posted successfully!";
+                    postForm.reset();
+                    submitPostBtn.disabled = false;
+                    setTimeout(() => uploadStatus.textContent = '', 3000);
+                }
+            );
+        });
+
+        async function listenForPosts() {
+            if (!currentUserInfo) return;
+            const friendsCol = collection(db, `artifacts/${appId}/public/data/users/${currentUserInfo.userId}/friends`);
+            const friendsQuerySnapshot = await getDocs(friendsCol);
+            
+            const friendIds = friendsQuerySnapshot.docs.map(doc => doc.id);
+            const userIdsToQuery = [currentUserInfo.userId, ...friendIds];
+
+            if (userIdsToQuery.length === 0) {
+                feedContainer.innerHTML = '<p class="text-center text-gray-500">Add friends to see their posts!</p>';
+                return;
+            }
+
+            const postsQuery = query(
+                collection(db, `artifacts/${appId}/public/data/posts`), 
+                where("authorId", "in", userIdsToQuery),
+                orderBy("createdAt", "desc")
+            );
+
+            feedUnsubscribe = onSnapshot(postsQuery, (snapshot) => {
+                feedContainer.innerHTML = '';
+                if(snapshot.empty){
+                    feedContainer.innerHTML = '<p class="text-center text-gray-500">No posts yet. Share your workout to get started!</p>';
+                    return;
+                }
+                snapshot.forEach(doc => {
+                    const post = doc.data();
+                    const postElement = createPostElement(post);
+                    feedContainer.appendChild(postElement);
+                });
+            }, (error) => {
+                console.error("Error listening for posts:", error);
+                feedContainer.innerHTML = '<p class="text-center text-red-500">Could not load feed. Your query might be too complex for this demo version if you have many friends.</p>';
+            });
+        }
+        
+        function createPostElement(post) {
+            const div = document.createElement('div');
+            div.className = "bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700";
+            let mediaElement = '';
+            if (post.mediaType.startsWith('image/')) {
+                mediaElement = `<img src="${post.mediaUrl}" alt="Workout post" class="mt-4 rounded-lg w-full">`;
+            } else if (post.mediaType.startsWith('video/')) {
+                mediaElement = `<video controls src="${post.mediaUrl}" class="mt-4 rounded-lg w-full"></video>`;
+            }
+            const postDate = post.createdAt ? new Date(post.createdAt.seconds * 1000).toLocaleString() : 'Just now';
+            div.innerHTML = `
+                <div class="flex items-center">
+                    <div class="font-bold text-emerald-400">${post.authorName}</div>
+                </div>
+                <p class="text-gray-400 text-xs mt-1">${postDate}</p>
+                <p class="text-gray-200 my-4">${post.caption}</p>
+                ${mediaElement}
+            `;
+            return div;
+        }
+    </script>
+</body>
+</html>
+
 
